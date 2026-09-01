@@ -1,0 +1,17 @@
+[project]
+name = "intellitrace-backend"
+version = "0.1.0"
+description = "IntelliTrace Predictive Cybercrime Intelligence & Cash-Out Forecasting Backend"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+    "redis>=5.0.0",
+    "cryptography>=43.0.0",
+    "python-multipart>=0.0.9",
+    "requests>=2.32.0",
+    "pytest>=8.3.0",
+]

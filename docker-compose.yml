@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # 1. Next.js Frontend Dashboard (Port 3000)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_SETTLEMENT_URL=http://settlement_gateway:5000
+    depends_on:
+      - backend
+      - settlement_gateway
+    restart: unless-stopped
+
+  # 2. FastAPI Core Engine (Layers 1-10) (Port 8000)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=intellitrace
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # 3. Layer 11 Blockchain Settlement Gateway (Port 5000)
+  settlement_gateway:
+    build:
+      context: ./settlement_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - ALGOD_SERVER=https://testnet-api.algonode.cloud
+      - ALGOD_PORT=443
+    restart: unless-stopped
+
+  # 4. In-Memory Redis Streams Buffer
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # 5. Graph Database (Neo4j Community)
+  neo4j:
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/intellitrace
+    restart: unless-stopped
