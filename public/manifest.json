@@ -1,0 +1,8 @@
+{
+  "name": "IntelliTrace Cyber Platform",
+  "short_name": "IntelliTrace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#00122e",
+  "theme_color": "#002147"
+}
