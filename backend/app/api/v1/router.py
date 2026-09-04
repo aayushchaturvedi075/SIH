@@ -8,6 +8,7 @@ from app.api.v1.spatial import router as spatial_router
 from app.api.v1.prediction import router as prediction_router
 from app.api.v1.feedback import router as feedback_router
 from app.api.v1.settlement import router as settlement_router
+from app.api.v1.cctv import router as cctv_router
 
 api_router = APIRouter()
 api_router.include_router(cases_router)
@@ -19,3 +20,4 @@ api_router.include_router(spatial_router)
 api_router.include_router(prediction_router)
 api_router.include_router(feedback_router)
 api_router.include_router(settlement_router)
+api_router.include_router(cctv_router)

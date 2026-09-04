@@ -16,7 +16,9 @@ import {
   Landmark,
   MapPin,
   Flame,
+  Video,
 } from "lucide-react";
+import { LiveCCTVModal } from "./LiveCCTVModal";
 
 // Fix Leaflet Default Icon path issues in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -730,6 +732,7 @@ export default function LeafletMap({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [tileTheme, setTileTheme] = useState<"OSM_STANDARD" | "DARK_CANVAS" | "OSM_HOT">("OSM_STANDARD");
   const [dispatchedUnits, setDispatchedUnits] = useState<Record<string, boolean>>({});
+  const [activeCctvAtm, setActiveCctvAtm] = useState<ATMItem | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeZone = HOTSPOT_ZONES[selectedZoneKey] || HOTSPOT_ZONES.NOIDA;
@@ -992,7 +995,19 @@ export default function LeafletMap({
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-navy-800">
+                <div className="mt-3 pt-2 border-t border-navy-800 space-y-1.5">
+                  <button
+                    onClick={() => setActiveCctvAtm(atm)}
+                    className="w-full py-1.5 px-2 bg-navy-900 hover:bg-navy-800 text-white border border-red-500/80 font-bold text-xs rounded transition-colors flex items-center justify-center gap-1.5 shadow-md group"
+                  >
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <Video className="w-3.5 h-3.5 text-red-400 group-hover:text-red-300" />
+                    <span>Live CCTV Feed [● REC]</span>
+                  </button>
+
                   {dispatchedUnits[atm.id] ? (
                     <div className="flex items-center justify-center gap-1.5 py-1 text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 rounded">
                       <CheckCircle2 className="w-4 h-4" /> Patrol Dispatched
@@ -1011,6 +1026,15 @@ export default function LeafletMap({
           </Marker>
         ))}
       </MapContainer>
+
+      {/* Live ATM e-Surveillance CCTV Modal */}
+      {activeCctvAtm && (
+        <LiveCCTVModal
+          isOpen={!!activeCctvAtm}
+          onClose={() => setActiveCctvAtm(null)}
+          atm={activeCctvAtm}
+        />
+      )}
     </div>
   );
 }
