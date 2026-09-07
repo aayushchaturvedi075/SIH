@@ -75,19 +75,31 @@ export function SideNavBar({ onCloseMobile }: SideNavBarProps) {
     if (onCloseMobile) onCloseMobile();
   };
 
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("intellitrace_officer");
+      window.dispatchEvent(new Event("officer-login"));
+    } catch (e) {}
+    if (onCloseMobile) onCloseMobile();
+  };
+
   return (
     <aside className="w-64 bg-surface-container-low border-r border-outline-variant flex flex-col h-full shrink-0 select-none">
       {/* Unit Header */}
       <div className="p-4 border-b border-outline-variant bg-surface flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-primary-container text-amber-400 flex items-center justify-center font-bold text-xs border border-primary shadow">
-          MHA
+        <div className="w-10 h-10 rounded-full bg-white p-0.5 shadow-md ring-2 ring-amber-400/40 flex items-center justify-center shrink-0 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="IntelliTrace Logo"
+            className="w-full h-full object-contain rounded-full"
+          />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <span className="font-label-caps text-xs text-primary font-bold tracking-wider">
-            MHA CYBER WING
+            INTELLITRACE
           </span>
-          <span className="text-[11px] text-on-surface-variant font-medium">
-            IntelliTrace Core Platform
+          <span className="text-[10px] text-on-surface-variant font-semibold tracking-wider text-amber-500 font-mono">
+            PREDICT • PREVENT • PROTECT
           </span>
         </div>
       </div>
@@ -174,6 +186,7 @@ export function SideNavBar({ onCloseMobile }: SideNavBarProps) {
 
         <Link
           href="/login"
+          onClick={handleLogout}
           className="w-full flex items-center justify-center gap-1.5 mt-2 py-1.5 px-3 border border-error text-error hover:bg-error-container font-label-caps text-[11px] rounded transition-colors uppercase font-bold tracking-wider"
         >
           <LogOut className="w-3.5 h-3.5" />

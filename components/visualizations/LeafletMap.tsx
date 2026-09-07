@@ -716,10 +716,38 @@ const HOTSPOT_ZONES: Record<string, HotspotZone> = {
 function MapController({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, zoom, { animate: true, duration: 1.2 });
+    map.flyTo(center, zoom, {
+      animate: true,
+      duration: 1.6,
+      easeLinearity: 0.25,
+    });
   }, [center, zoom, map]);
   return null;
 }
+
+const TILE_STYLES = [
+  {
+    key: "OSM_STANDARD" as const,
+    name: "OpenStreetMap",
+    description: "Standard street topology & navigation",
+    badge: "OSM Standard",
+    icon: "🗺️",
+  },
+  {
+    key: "DARK_CANVAS" as const,
+    name: "Dark Canvas",
+    description: "Low-light tactical radar & night mode",
+    badge: "Esri Dark Canvas",
+    icon: "🌌",
+  },
+  {
+    key: "OSM_HOT" as const,
+    name: "High Contrast",
+    description: "Humanitarian high-vis road network",
+    badge: "High-Vis Tactical",
+    icon: "⚡",
+  },
+];
 
 export default function LeafletMap({
   height = "550px",
@@ -729,19 +757,25 @@ export default function LeafletMap({
   onSelectATM?: (atm: ATMItem) => void;
 }) {
   const [selectedZoneKey, setSelectedZoneKey] = useState<string>("NOIDA");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isZoneDropdownOpen, setIsZoneDropdownOpen] = useState(false);
+  const [isStyleDropdownOpen, setIsStyleDropdownOpen] = useState(false);
   const [tileTheme, setTileTheme] = useState<"OSM_STANDARD" | "DARK_CANVAS" | "OSM_HOT">("OSM_STANDARD");
   const [dispatchedUnits, setDispatchedUnits] = useState<Record<string, boolean>>({});
   const [activeCctvAtm, setActiveCctvAtm] = useState<ATMItem | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const zoneDropdownRef = useRef<HTMLDivElement>(null);
+  const styleDropdownRef = useRef<HTMLDivElement>(null);
 
   const activeZone = HOTSPOT_ZONES[selectedZoneKey] || HOTSPOT_ZONES.NOIDA;
+  const activeStyle = TILE_STYLES.find((s) => s.key === tileTheme) || TILE_STYLES[0];
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
+      if (zoneDropdownRef.current && !zoneDropdownRef.current.contains(event.target as Node)) {
+        setIsZoneDropdownOpen(false);
+      }
+      if (styleDropdownRef.current && !styleDropdownRef.current.contains(event.target as Node)) {
+        setIsStyleDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -754,119 +788,167 @@ export default function LeafletMap({
 
   return (
     <div className="relative w-full rounded-lg overflow-hidden border border-navy-700 shadow-2xl bg-navy-950">
-      {/* Top Left Controls: Tile Selector */}
-      <div className="absolute top-3 left-3 z-[1000] flex flex-wrap items-center gap-1.5 bg-navy-900/95 backdrop-blur border border-navy-700 rounded-lg p-1.5 shadow-xl">
-        <span className="text-[11px] font-semibold text-slate-300 px-1.5 flex items-center gap-1">
-          <Layers className="w-3.5 h-3.5 text-saffron" /> Style:
-        </span>
-        <button
-          onClick={() => setTileTheme("OSM_STANDARD")}
-          className={`px-2 py-1 text-xs font-mono font-medium rounded transition-colors ${
-            tileTheme === "OSM_STANDARD"
-              ? "bg-blue-600 text-white font-bold shadow"
-              : "bg-navy-800 text-slate-300 hover:bg-navy-700 hover:text-white"
-          }`}
-        >
-          OpenStreetMap
-        </button>
-        <button
-          onClick={() => setTileTheme("DARK_CANVAS")}
-          className={`px-2 py-1 text-xs font-mono font-medium rounded transition-colors ${
-            tileTheme === "DARK_CANVAS"
-              ? "bg-blue-600 text-white font-bold shadow"
-              : "bg-navy-800 text-slate-300 hover:bg-navy-700 hover:text-white"
-          }`}
-        >
-          Dark Canvas
-        </button>
-        <button
-          onClick={() => setTileTheme("OSM_HOT")}
-          className={`px-2 py-1 text-xs font-mono font-medium rounded transition-colors ${
-            tileTheme === "OSM_HOT"
-              ? "bg-blue-600 text-white font-bold shadow"
-              : "bg-navy-800 text-slate-300 hover:bg-navy-700 hover:text-white"
-          }`}
-        >
-          High Contrast
-        </button>
-      </div>
-
-      {/* Top Right: Watermelon / shadcn style dropdown-menu-4 for State & Hotspot Selection */}
-      <div ref={dropdownRef} className="absolute top-3 right-3 z-[1000]">
-        {/* Dropdown Trigger Button */}
-        <button
-          onClick={() => setIsDropdownOpen((prev) => !prev)}
-          className="flex items-center gap-2 bg-navy-900/95 hover:bg-navy-800 text-white px-3.5 py-1.5 rounded-lg border border-navy-600 shadow-xl font-mono text-xs font-semibold transition-all group"
-        >
-          <Navigation className="w-3.5 h-3.5 text-saffron animate-pulse" />
-          <div className="flex flex-col text-left">
-            <span className="text-[10px] uppercase text-slate-400 font-sans tracking-wider">Metropolitan Zone</span>
-            <span className="text-white font-bold text-xs flex items-center gap-1.5">
-              {activeZone.name}
-            </span>
-          </div>
-          <ChevronDown
-            className={`w-4 h-4 text-slate-400 transition-transform duration-200 ml-1 ${
-              isDropdownOpen ? "rotate-180 text-saffron" : ""
-            }`}
-          />
-        </button>
-
-        {/* Dropdown Content - matching dropdown-menu-4 pattern */}
-        {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-72 bg-navy-950/98 backdrop-blur-md rounded-xl border border-navy-700 p-1.5 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150 z-[1100]">
-            <div className="px-2.5 py-1.5 border-b border-navy-800 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-saffron">
-                SELECT CRIME INTERCEPT SECTOR
+      {/* Top Right Controls: Map Tile Style & Metropolitan Zone Dropdowns Side-by-Side */}
+      <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2 sm:gap-2.5">
+        {/* Style Dropdown - Identical design to Metropolitan Zone */}
+        <div ref={styleDropdownRef} className="relative">
+          <button
+            onClick={() => {
+              setIsStyleDropdownOpen((prev) => !prev);
+              setIsZoneDropdownOpen(false);
+            }}
+            className="flex items-center gap-2 bg-[#020817] hover:bg-[#0b152d] text-white px-3.5 py-1.5 rounded-lg border-2 border-slate-600/90 shadow-[0_10px_25px_rgba(0,0,0,0.85)] font-mono text-xs font-semibold transition-all group"
+          >
+            <Layers className="w-3.5 h-3.5 text-saffron" />
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase text-slate-300 font-sans tracking-wider font-bold">
+                Map Tile Style
+              </span>
+              <span className="text-white font-bold text-xs flex items-center gap-1.5">
+                {activeStyle.name}
               </span>
             </div>
+            <ChevronDown
+              className={`w-4 h-4 text-slate-300 transition-transform duration-200 ml-1 ${
+                isStyleDropdownOpen ? "rotate-180 text-saffron" : ""
+              }`}
+            />
+          </button>
 
-            {/* Menu Items */}
-            <div className="space-y-1">
-              {Object.values(HOTSPOT_ZONES).map((zone) => {
-                const isSelected = zone.key === selectedZoneKey;
-                return (
-                  <div
-                    key={zone.key}
-                    onClick={() => {
-                      setSelectedZoneKey(zone.key);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`flex items-start gap-3 rounded-lg p-2.5 cursor-pointer transition-all ${
-                      isSelected
-                        ? "bg-navy-800/90 border border-saffron/40 shadow-md text-white"
-                        : "hover:bg-navy-900/80 text-slate-300 hover:text-white"
-                    }`}
-                  >
+          {/* Style Dropdown Menu */}
+          {isStyleDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-72 bg-[#020817] rounded-xl border-2 border-slate-600 p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-250 ease-out origin-top-right transition-all z-[1100]">
+              <div className="px-2.5 py-1.5 border-b border-slate-700 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-saffron">
+                  SELECT MAP TILE STYLE
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                {TILE_STYLES.map((style) => {
+                  const isSelected = style.key === tileTheme;
+                  return (
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow ${
-                        isSelected ? "bg-saffron text-navy-950 font-bold" : "bg-navy-800 text-slate-400"
+                      key={style.key}
+                      onClick={() => {
+                        setTileTheme(style.key);
+                        setIsStyleDropdownOpen(false);
+                      }}
+                      className={`flex items-start gap-3 rounded-lg p-2.5 cursor-pointer transition-all duration-200 ease-in-out ${
+                        isSelected
+                          ? "bg-[#0f1d38] border border-amber-400/80 shadow-md text-white font-bold"
+                          : "hover:bg-[#0f1d38] text-slate-200 hover:text-white"
                       }`}
                     >
-                      {zone.key === "NOIDA" && "🏢"}
-                      {zone.key === "MUMBAI" && "🏛️"}
-                      {zone.key === "LUCKNOW" && "📍"}
-                      {zone.key === "KOLKATA" && "🌉"}
-                      {zone.key === "BANGALORE" && "💻"}
-                    </div>
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold font-sans text-white">{zone.name}</span>
-                        {isSelected && (
-                          <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-0.5">
-                            <CheckCircle2 className="w-3 h-3" /> ACTIVE
-                          </span>
-                        )}
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow ${
+                          isSelected ? "bg-saffron text-navy-950 font-bold" : "bg-[#0b162c] text-slate-300"
+                        }`}
+                      >
+                        {style.icon}
                       </div>
-                      <span className="text-[11px] text-slate-400 font-sans truncate">{zone.description}</span>
-                      <span className="text-[10px] font-mono text-saffron mt-0.5">{zone.badge}</span>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold font-sans text-white">{style.name}</span>
+                          {isSelected && (
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-0.5">
+                              <CheckCircle2 className="w-3 h-3" /> ACTIVE
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-300 font-sans truncate">{style.description}</span>
+                        <span className="text-[10px] font-mono text-saffron mt-0.5 font-semibold">{style.badge}</span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Metropolitan Zone Dropdown */}
+        <div ref={zoneDropdownRef} className="relative">
+          {/* Dropdown Trigger Button */}
+          <button
+            onClick={() => {
+              setIsZoneDropdownOpen((prev) => !prev);
+              setIsStyleDropdownOpen(false);
+            }}
+            className="flex items-center gap-2 bg-[#020817] hover:bg-[#0b152d] text-white px-3.5 py-1.5 rounded-lg border-2 border-slate-600/90 shadow-[0_10px_25px_rgba(0,0,0,0.85)] font-mono text-xs font-semibold transition-all group"
+          >
+            <Navigation className="w-3.5 h-3.5 text-saffron animate-pulse" />
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] uppercase text-slate-300 font-sans tracking-wider font-bold">
+                Metropolitan Zone
+              </span>
+              <span className="text-white font-bold text-xs flex items-center gap-1.5">
+                {activeZone.name}
+              </span>
+            </div>
+            <ChevronDown
+              className={`w-4 h-4 text-slate-300 transition-transform duration-200 ml-1 ${
+                isZoneDropdownOpen ? "rotate-180 text-saffron" : ""
+              }`}
+            />
+          </button>
+
+          {/* Dropdown Content - matching dropdown-menu-4 pattern */}
+          {isZoneDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-72 bg-[#020817] rounded-xl border-2 border-slate-600 p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-250 ease-out origin-top-right transition-all z-[1100]">
+              <div className="px-2.5 py-1.5 border-b border-slate-700 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-saffron">
+                  SELECT CRIME INTERCEPT SECTOR
+                </span>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-1">
+                {Object.values(HOTSPOT_ZONES).map((zone) => {
+                  const isSelected = zone.key === selectedZoneKey;
+                  return (
+                    <div
+                      key={zone.key}
+                      onClick={() => {
+                        setSelectedZoneKey(zone.key);
+                        setIsZoneDropdownOpen(false);
+                      }}
+                      className={`flex items-start gap-3 rounded-lg p-2.5 cursor-pointer transition-all ${
+                        isSelected
+                          ? "bg-[#0f1d38] border border-amber-400/80 shadow-md text-white font-bold"
+                          : "hover:bg-[#0f1d38] text-slate-200 hover:text-white"
+                      }`}
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow ${
+                          isSelected ? "bg-saffron text-navy-950 font-bold" : "bg-[#0b162c] text-slate-300"
+                        }`}
+                      >
+                        {zone.key === "NOIDA" && "🏢"}
+                        {zone.key === "MUMBAI" && "🏛️"}
+                        {zone.key === "LUCKNOW" && "📍"}
+                        {zone.key === "KOLKATA" && "🌉"}
+                        {zone.key === "BANGALORE" && "💻"}
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold font-sans text-white">{zone.name}</span>
+                          {isSelected && (
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-0.5">
+                              <CheckCircle2 className="w-3 h-3" /> ACTIVE
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-300 font-sans truncate">{zone.description}</span>
+                        <span className="text-[10px] font-mono text-saffron mt-0.5 font-semibold">{zone.badge}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Map Container */}

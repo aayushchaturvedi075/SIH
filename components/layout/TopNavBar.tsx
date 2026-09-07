@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Bell, Shield, Radio, User, Menu, X, CheckCircle2 } from "lucide-react";
+import { Search, Bell, Shield, Radio, User, Menu, X, CheckCircle2, Sun, Moon } from "lucide-react";
 import { Badge } from "@/components/common/Badge";
 
 interface TopNavBarProps {
@@ -15,6 +15,64 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    // Check initial theme from localStorage or document
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const isDark = savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"));
+    if (isDark) {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      setTheme("light");
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("theme", nextTheme);
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
+  const [officer, setOfficer] = useState({
+    name: "Vikramaditya K., IPS",
+    role: "Superintendent / Cyber",
+    initials: "VK",
+    email: "vikram.ips@mha.gov.in"
+  });
+
+  useEffect(() => {
+    const loadOfficer = () => {
+      try {
+        const saved = localStorage.getItem("intellitrace_officer");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.name) {
+            setOfficer({
+              name: parsed.name,
+              role: parsed.role || "Superintendent / Cyber",
+              initials: parsed.initials || "VK",
+              email: parsed.email || ""
+            });
+          }
+        }
+      } catch (e) {}
+    };
+    loadOfficer();
+    window.addEventListener("officer-login", loadOfficer);
+    return () => window.removeEventListener("officer-login", loadOfficer);
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -53,8 +111,12 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
           </button>
         )}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-primary font-bold shadow">
-            <Shield className="w-5 h-5 text-primary-container" />
+          <div className="w-9 h-9 rounded-full bg-white p-0.5 shadow-md ring-2 ring-amber-400/40 flex items-center justify-center shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+            <img
+              src="/logo.png"
+              alt="IntelliTrace Logo"
+              className="w-full h-full object-contain rounded-full"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-display-lg text-lg font-bold text-white tracking-tight leading-none group-hover:text-amber-400 transition-colors">
@@ -98,6 +160,29 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
           <span>DEFCON 2</span>
         </div>
 
+        {/* Dark / Light Theme Toggle Button with Smooth Animated Micro-Interaction */}
+        <button
+          onClick={toggleTheme}
+          className="relative w-9 h-9 p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-all duration-300 flex items-center justify-center group overflow-hidden"
+          title={theme === "dark" ? "Switch to Day / Light Mode" : "Switch to Night / Dark Mode"}
+          aria-label={theme === "dark" ? "Switch to Day / Light Mode" : "Switch to Night / Dark Mode"}
+        >
+          <Sun
+            className={`w-5 h-5 text-amber-400 absolute transition-all duration-500 ease-in-out transform ${
+              theme === "dark"
+                ? "rotate-0 scale-100 opacity-100 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                : "rotate-90 scale-0 opacity-0 pointer-events-none"
+            }`}
+          />
+          <Moon
+            className={`w-5 h-5 text-slate-200 absolute transition-all duration-500 ease-in-out transform ${
+              theme === "light"
+                ? "rotate-0 scale-100 opacity-100"
+                : "-rotate-90 scale-0 opacity-0 pointer-events-none"
+            }`}
+          />
+        </button>
+
         {/* Notifications Dropdown Trigger */}
         <div className="relative">
           <button
@@ -111,7 +196,7 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
 
           {/* Notifications Panel */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-outline-variant rounded shadow-2xl z-50 text-on-surface overflow-hidden">
+            <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded shadow-2xl z-50 text-on-surface overflow-hidden">
               <div className="bg-primary-container px-4 py-2.5 text-white flex items-center justify-between">
                 <span className="font-label-caps text-xs font-bold uppercase">LIVE HIGH-PRIORITY ALERTS (4)</span>
                 <button
@@ -122,20 +207,20 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
                 </button>
               </div>
               <div className="divide-y divide-surface-container max-h-80 overflow-y-auto text-xs">
-                <div className="p-3 hover:bg-surface-container-low transition-colors">
+                <div className="p-3 hover:bg-surface-container-high transition-colors">
                   <div className="flex items-center justify-between">
                     <Badge variant="critical">CASH-OUT IMMINENT</Badge>
                     <span className="text-[10px] text-on-surface-variant font-mono">2m ago</span>
                   </div>
-                  <p className="font-semibold text-primary mt-1">HDFC Sector 62 E-Lobby (Noida)</p>
+                  <p className="font-semibold text-on-surface mt-1">HDFC Sector 62 E-Lobby (Noida)</p>
                   <p className="text-on-surface-variant text-[11px] mt-0.5">Mule balance ₹18.5L transferred. Intercept window active.</p>
                 </div>
-                <div className="p-3 hover:bg-surface-container-low transition-colors">
+                <div className="p-3 hover:bg-surface-container-high transition-colors">
                   <div className="flex items-center justify-between">
                     <Badge variant="critical">RAPID LAYERING</Badge>
                     <span className="text-[10px] text-on-surface-variant font-mono">11m ago</span>
                   </div>
-                  <p className="font-semibold text-primary mt-1">₹95L Split Across 5 Accounts</p>
+                  <p className="font-semibold text-on-surface mt-1">₹95L Split Across 5 Accounts</p>
                   <p className="text-on-surface-variant text-[11px] mt-0.5">ICICI to Axis/Canara within 180 seconds.</p>
                 </div>
               </div>
@@ -153,15 +238,19 @@ export function TopNavBar({ onToggleMobileMenu }: TopNavBarProps) {
         </div>
 
         {/* Officer User Profile */}
-        <div className="flex items-center gap-2 pl-2 border-l border-surface-tint">
-          <div className="w-8 h-8 rounded-full bg-secondary-container text-primary font-bold flex items-center justify-center text-xs">
-            VK
+        <Link
+          href="/login"
+          title={`Signed in as ${officer.name} (${officer.email || officer.role}) - Click to switch profile / login`}
+          className="flex items-center gap-2 pl-2 border-l border-surface-tint hover:opacity-90 transition-opacity"
+        >
+          <div className="w-8 h-8 rounded-full bg-secondary-container text-primary font-bold flex items-center justify-center text-xs shadow-sm">
+            {officer.initials}
           </div>
           <div className="hidden md:flex flex-col">
-            <span className="text-xs font-bold text-white leading-tight">Vikramaditya K., IPS</span>
-            <span className="text-[10px] text-primary-fixed-dim">Superintendent / Cyber</span>
+            <span className="text-xs font-bold text-white leading-tight truncate max-w-[170px]">{officer.name}</span>
+            <span className="text-[10px] text-primary-fixed-dim truncate max-w-[170px]">{officer.role}</span>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

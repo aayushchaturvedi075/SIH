@@ -111,8 +111,12 @@ export default function OfficialReportPage() {
         <div className="bg-white border-2 border-primary-container p-8 lg:p-12 text-on-surface shadow-xl space-y-8 font-sans">
           {/* Official Emblem & Top Letterhead */}
           <div className="text-center border-b-2 border-primary-container pb-6 space-y-2">
-            <div className="w-16 h-16 rounded-full bg-primary-container text-white flex items-center justify-center mx-auto mb-2 shadow">
-              <Shield className="w-10 h-10 text-amber-400" />
+            <div className="w-20 h-20 rounded-full bg-white p-1 shadow-lg ring-2 ring-primary-container flex items-center justify-center mx-auto mb-2 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="IntelliTrace Official Emblem"
+                className="w-full h-full object-contain rounded-full"
+              />
             </div>
             <h2 className="font-display-lg text-lg lg:text-xl font-bold uppercase tracking-wider text-primary">
               GOVERNMENT OF INDIA • MINISTRY OF HOME AFFAIRS

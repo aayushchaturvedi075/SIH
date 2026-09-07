@@ -38,12 +38,171 @@
     --outline-variant: #c4c6cf;
   }
 
+  .dark {
+    --primary: #000a1e;
+    --primary-container: #0a1f42;
+    --secondary: #60a5fa;
+    --surface: #070e1e;
+    --background: #030712;
+    --on-surface: #f1f5f9;
+    --on-surface-variant: #94a3b8;
+    --outline-variant: #1e293b;
+  }
+
   body {
     background-color: #f9f9f9;
     color: #1a1c1c;
     font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Universal Silky Smooth Transition for Theme & Surface Switching */
+  body,
+  aside,
+  header,
+  nav,
+  main,
+  footer,
+  section,
+  table,
+  tr,
+  th,
+  td,
+  input,
+  select,
+  textarea,
+  .bg-surface,
+  .bg-background,
+  .bg-surface-container,
+  .bg-surface-container-low,
+  .bg-surface-container-lowest,
+  .bg-surface-container-high,
+  .bg-surface-container-highest,
+  .border-outline-variant,
+  .border-surface-container,
+  .text-primary,
+  .text-on-surface,
+  .text-on-surface-variant {
+    transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark body {
+    background-color: #030712;
+    color: #f1f5f9;
+  }
+}
+
+/* Smooth Leaflet Tile Cross-Fade Transition */
+.leaflet-tile-container img,
+.leaflet-tile {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Dark Mode Text Contrast Optimizations */
+.dark .text-primary {
+  color: #f8fafc !important;
+}
+
+.dark .text-on-surface {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-on-surface-variant {
+  color: #94a3b8 !important;
+}
+
+/* Dark Mode Surfaces & Layout */
+.dark .bg-background {
+  background-color: #030712 !important;
+}
+
+.dark .bg-surface {
+  background-color: #070e1e !important;
+}
+
+.dark .bg-surface-container-lowest,
+.dark .bg-surface-container-low {
+  background-color: #0b152d !important;
+}
+
+.dark .bg-surface-container {
+  background-color: #0f1d3b !important;
+}
+
+.dark .bg-surface-container-high {
+  background-color: #162a52 !important;
+}
+
+.dark .bg-surface-container-highest {
+  background-color: #1e3566 !important;
+}
+
+/* White elements adaptation in Dark Mode */
+.dark .bg-white:not(.keep-white) {
+  background-color: #0a1428 !important;
+  color: #f1f5f9;
+}
+
+/* Dark Mode Borders */
+.dark .border-outline-variant {
+  border-color: #1e293b !important;
+}
+
+.dark .border-surface-container {
+  border-color: #162544 !important;
+}
+
+/* Dark Mode Tables and Zebra striping */
+.dark .zebra-row:nth-child(even) {
+  background-color: #0a1428 !important;
+}
+
+.dark .zebra-row:nth-child(odd) {
+  background-color: #070e1e !important;
+}
+
+.dark .zebra-row:hover {
+  background-color: #132447 !important;
+}
+
+.dark table th {
+  background-color: #030c1d !important;
+  color: #e2e8f0 !important;
+  border-color: #1e293b !important;
+}
+
+.dark table td {
+  color: #f1f5f9 !important;
+  border-color: #1e293b !important;
+}
+
+/* Dark Mode Sidebar Unit Header & Aside */
+.dark aside {
+  background-color: #050b17 !important;
+  border-color: #1e293b !important;
+}
+
+.dark aside > div:first-child {
+  background-color: #070e1e !important;
+  border-color: #1e293b !important;
+}
+
+/* Dark Mode Form Inputs and Selects */
+.dark input[type="text"],
+.dark input[type="search"],
+.dark input[type="number"],
+.dark select,
+.dark textarea {
+  background-color: #0b152d !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+.dark input::placeholder {
+  color: #64748b !important;
 }
 
 .material-symbols-outlined {
@@ -72,6 +231,18 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #74777f;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #070e1e;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 /* Zebra striping for tables */

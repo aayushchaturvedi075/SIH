@@ -29,7 +29,7 @@ export function AppShell({ children }: AppShellProps) {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="relative w-64 max-w-[80vw] h-full bg-white z-50 shadow-2xl flex">
+            <div className="relative w-64 max-w-[80vw] h-full bg-surface-container-low z-50 shadow-2xl flex">
               <SideNavBar onCloseMobile={() => setMobileMenuOpen(false)} />
             </div>
           </div>

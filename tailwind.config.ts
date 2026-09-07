@@ -40,6 +40,13 @@ const config: Config = {
         saffron: "#ff9933",
         "saffron-dark": "#cd7200",
 
+        navy: {
+          700: "#1e3a6a",
+          800: "#0e2246",
+          900: "#051329",
+          950: "#020a17",
+        },
+
         surface: "#f9f9f9",
         "surface-dim": "#dadada",
         "surface-bright": "#f9f9f9",
